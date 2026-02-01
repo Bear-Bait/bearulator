@@ -573,6 +573,112 @@ Public API:
 			"Track manager: Master bus reference set".postln;
 		},
 
+		// === HARMONIUM VOCODER ROUTING ===
+		// Pre-fader hijack: redirects track output directly to Harmonium, bypassing master bus
+
+		hijackTrackForVocoder: { arg self, trackNum, destinationBus;
+			var track = tracks[trackNum];
+
+			if(track.isNil, {
+				"Track manager: Track % not initialized".format(trackNum + 1).warn;
+				^nil;
+			});
+
+			// Store original routing for restoration
+			track.savedRouting = (
+				originalOutBus: track.audioBus.index,
+				originalAmp: track.params[\amp] ? 0.5
+			);
+
+			// Redirect grain synth output to Harmonium input bus
+			if(track.grainSynth.notNil, {
+				track.grainSynth.set(\out, destinationBus, \amp, 1.0);
+			});
+
+			// Also redirect spectral synth if active
+			if(track.spectralSynth.notNil, {
+				track.spectralSynth.set(\out, destinationBus, \amp, 1.0);
+			});
+
+			// Also redirect direct playback synth if active
+			if(track.directSynth.notNil, {
+				track.directSynth.set(\out, destinationBus, \amp, 1.0);
+			});
+
+			// Mute this track in the master bus (no double signal)
+			if(masterBus.notNil, {
+				var paramName = ("track" ++ (trackNum + 1) ++ "Mute").asSymbol;
+				masterBus.set(paramName, 1);
+			});
+
+			"[Harmonium] Track % hijacked → Vocoder (bus %, dry muted)".format(
+				trackNum + 1, destinationBus
+			).postln;
+
+			track.savedRouting;
+		},
+
+		restoreTrackRouting: { arg self, trackNum;
+			var track = tracks[trackNum];
+
+			if(track.isNil, {
+				"Track manager: Track % not initialized".format(trackNum + 1).warn;
+				^nil;
+			});
+
+			if(track.savedRouting.isNil, {
+				"Track manager: Track % has no saved routing to restore".format(trackNum + 1).postln;
+				^nil;
+			});
+
+			// Restore grain synth output to original bus
+			if(track.grainSynth.notNil, {
+				track.grainSynth.set(
+					\out, track.savedRouting.originalOutBus,
+					\amp, track.savedRouting.originalAmp
+				);
+			});
+
+			// Restore spectral synth
+			if(track.spectralSynth.notNil, {
+				track.spectralSynth.set(
+					\out, track.savedRouting.originalOutBus,
+					\amp, track.savedRouting.originalAmp
+				);
+			});
+
+			// Restore direct playback synth
+			if(track.directSynth.notNil, {
+				track.directSynth.set(
+					\out, track.savedRouting.originalOutBus,
+					\amp, track.savedRouting.originalAmp
+				);
+			});
+
+			// Unmute this track in the master bus
+			if(masterBus.notNil, {
+				var paramName = ("track" ++ (trackNum + 1) ++ "Mute").asSymbol;
+				masterBus.set(paramName, track.mute.asInteger);  // Restore original mute state
+			});
+
+			"[Harmonium] Track % routing restored (amp: %)".format(
+				trackNum + 1,
+				track.savedRouting.originalAmp.round(0.01)
+			).postln;
+
+			track.savedRouting = nil;  // Clear saved state
+		},
+
+		// Get the track's audio bus (for external routing)
+		getTrackBus: { arg self, trackNum;
+			var track = tracks[trackNum];
+			if(track.notNil and: { track.audioBus.notNil }, {
+				track.audioBus.index;
+			}, {
+				nil;
+			});
+		},
+
 		// === PHASE 5: MODULATION SYSTEM ===
 
 		// Create a modulator for a track

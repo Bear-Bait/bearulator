@@ -82,4 +82,19 @@
 - **[ ] GUI Layout Cleanup:** Some GUI elements overlap in the Master tab and need tidying.
 
 ---
-**Last Updated:** 2026-01-28
+## 🐛 **ACTIVE BUGS & DIAGNOSTICS**
+
+### Harmonium → Bearulator Connection Issue
+**Status:** Diagnosed 2026-02-01
+**Problem:** New Harmonium additive synth section not properly connecting to grain engine in vocoder mode
+**See:** HARMONIUM-DIAGNOSIS.md for full analysis and debugging checklist
+**Most Likely Cause:** Grain synth not initialized before hijack attempted
+**Quick Test:**
+```supercollider
+~trackManager.tracks[0].grainSynth  // Should not be nil
+~harmoniumInputBus.scope            // Should show audio from Track 1
+```
+
+---
+
+**Last Updated:** 2026-02-01

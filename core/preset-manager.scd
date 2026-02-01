@@ -21,7 +21,7 @@ Preset Format: JSON-style text files in presets/ directory
 
 	// Create presets directory if it doesn't exist
 	if(File.exists(presetPath).not, {
-		("mkdir -p" + presetPath.quote).systemCmd;
+		File.mkdir(presetPath);
 		"Preset directory created: %".format(presetPath).postln;
 	});
 

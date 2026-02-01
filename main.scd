@@ -236,6 +236,15 @@ s.waitForBoot {
 		0.2.wait;
 		"  ✓ Sync Manager loaded".postln;
 
+		// Harmonium: 32-band filterbank synth with vocoder mode
+		(~config.corePath +/+ "harmonium-engine.scd").load;
+		0.2.wait;
+		"  ✓ Harmonium engine loaded".postln;
+
+		(~config.guiPath +/+ "harmonium-interface.scd").load;
+		0.2.wait;
+		"  ✓ Harmonium GUI loaded".postln;
+
 		0.5.wait;
 
 		// ============================================
@@ -304,7 +313,6 @@ s.waitForBoot {
 		// Create 4-track GUI (AFTER managers are ready)
 		~gui = ~bearulatorFourTrackGUI.value(~trackManager, ~masterBus, s);
 		{ ~gui.create; }.defer;
-		0.2.wait;
 		"  ✓ Four-track GUI created".postln;
 
 		// Initialize viewfinder (Phase 7)
@@ -320,6 +328,7 @@ s.waitForBoot {
 		"  ✓ Quad panner initialized (click QUAD PANNER button to open)".postln;
 
 		// Phase 14: Initialize preset system
+		0.1.wait; // Added for debugging scheduler issue
 		~presets = ~bearulatorPresetSystem.value(~trackManager);
 		~presets.init;
 		0.1.wait;

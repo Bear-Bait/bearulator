@@ -1198,6 +1198,37 @@ Phase 7 Features:
 				});
 			});
 
+		rightY = rightY + 50;
+
+		// === HARMONIUM (32-Band Filterbank Synth) ===
+		StaticText(parent, Rect(rightColX, rightY, 200, 20))
+			.string_("32-BAND HARMONIUM")
+			.font_(Font("DejaVu Sans Mono", 12, true))
+			.stringColor_(colors.magenta);
+
+		rightY = rightY + 25;
+
+		Button(parent, Rect(rightColX, rightY, 130, 30))
+			.states_([
+				["OPEN HARMONIUM", colors.fg, Color(0.4, 0.2, 0.6)],
+				["HARMONIUM ON", colors.black, colors.magenta]
+			])
+			.font_(Font("DejaVu Sans Mono", 10, true))
+			.toolTip_("Open 32-band filterbank synthesizer (Vocoder mode available)")
+			.action_({ |btn|
+				if(~makeHarmoniumGUI.notNil, {
+					~makeHarmoniumGUI.();
+					btn.value_(1);
+				}, {
+					"Harmonium module not loaded. Run: \"core/harmonium-engine.scd\".loadRelative;".warn;
+				});
+			});
+
+		StaticText(parent, Rect(rightColX + 140, rightY + 5, 200, 20))
+			.string_("Additive synth + Vocoder")
+			.font_(Font("DejaVu Sans Mono", 9))
+			.stringColor_(colors.fg.alpha_(0.7));
+
 		// === LEFT COLUMN CONTINUED: PRESET SYSTEM ===
 		leftY = leftY + 60;  // Add spacing to avoid overlap with filter sliders
 
