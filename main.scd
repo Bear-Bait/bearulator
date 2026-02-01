@@ -353,6 +353,21 @@ s.waitForBoot {
 		~recorder = ~trackManager.getTracks[0].recorder;
 
 		// ============================================
+		// AUTO-INIT HARMONIUM VOCODER (OPTIONAL)
+		// ============================================
+		// Uncomment below to auto-enable vocoder on startup
+		// This requires a sample to be pre-loaded on Track 1
+		// For now, leave disabled - user will call ~enableHarmoniumVocoder manually
+
+		/*
+		AppClock.sched(3.0, {
+			"[Auto-Init] Attempting to enable Harmonium vocoder...".postln;
+			~enableHarmoniumVocoder.(0, 60, 100);
+			nil;
+		});
+		*/
+
+		// ============================================
 		// READY
 		// ============================================
 

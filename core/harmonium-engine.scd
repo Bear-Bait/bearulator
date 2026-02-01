@@ -434,6 +434,66 @@ SynthDef(\harmoniumTrackRouter, { |inBus, outBus, amp = 1.0|
 // Track which track is currently routed (for cleanup)
 ~harmoniumRoutedTrack = nil;
 
+// === HELPER: ONE-CALL VOCODER SETUP ===
+
+// Enable vocoder mode with a single call
+// Call this AFTER Track N has loaded a sample and started playback
+~enableHarmoniumVocoder = { |trackNum = 0, midiNote = 60, velocity = 100|
+	var grainSynth;
+	
+	trackNum = trackNum ? 0;
+	midiNote = midiNote ? 60;
+	velocity = velocity ? 100;
+	
+	"[Harmonium] Setting up vocoder mode...".postln;
+	
+	// Check if grain synth exists
+	if(~trackManager.notNil and: { ~trackManager.tracks[trackNum].notNil }, {
+		grainSynth = ~trackManager.tracks[trackNum].grainSynth;
+		
+		if(grainSynth.isNil, {
+			"[ERROR] Track % grain synth not initialized!".format(trackNum + 1).warn;
+			"[FIX] Load a sample and start playback first:".postln;
+			"  ~trackManager.loadSample(%, \"path/to/audio.wav\");".format(trackNum).postln;
+			"  ~trackManager.startPlayback(%);".format(trackNum).postln;
+			^nil;
+		});
+		
+		// Step 1: Configure vocoder params
+		~harmoniumParams[\srcSel] = 16;        // Source 16 = Track audio
+		~harmoniumParams[\amp] = 0.6;
+		~harmoniumParams[\bypassBPF] = 0;      // Enable 32-band filterbank
+		~harmoniumParams[\lpgMode] = 0;        // Bypass LPG for now
+		~harmoniumParams[\inGain] = 1.0;
+		~harmoniumParams[\wet] = 1.0;
+		
+		// Step 2: Route track output to vocoder input bus
+		~harmoniumStartRouting.(trackNum);
+		
+		// Step 3: Spawn Harmonium reader synth
+		~harmoniumNoteOn.(midiNote, velocity, 0);
+		
+		"[OK] Vocoder enabled on Track %: reading grain output, filtering through 32-band EQ".format(trackNum + 1).postln;
+		"     MIDI note: % (fundamental = %), amp: %".format(midiNote, midiNote.midicps.round(0.1), ~harmoniumParams[\amp]).postln;
+		"     To disable: ~disableHarmoniumVocoder.()".postln;
+		
+	}, {
+		"[ERROR] Track manager not available".warn;
+		^nil;
+	});
+};
+
+// Disable vocoder and restore normal routing
+~disableHarmoniumVocoder = {
+	if(~harmoniumRoutedTrack.notNil, {
+		~harmoniumNoteOff.(60, 0);  // Kill the reader synth
+		~harmoniumStopRouting.();    // Restore track routing
+		"[OK] Vocoder disabled. Track % restored to normal output.".format(~harmoniumRoutedTrack + 1).postln;
+	}, {
+		"[INFO] Vocoder not currently enabled".postln;
+	});
+};
+
 // === POLYPHONIC NOTE FUNCTIONS ===
 
 // Play a polyphonic note
@@ -628,11 +688,12 @@ SynthDef(\harmoniumTrackRouter, { |inBus, outBus, amp = 1.0|
 };
 
 "[Harmonium Engine v2.1] 32-band filterbank synth loaded.".postln;
-"  - Synth: \\bearulatorHarmonium".postln;
 "  - Note on: ~harmoniumNoteOn.(note, vel, chan)".postln;
 "  - Note off: ~harmoniumNoteOff.(note, chan)".postln;
 "  - Set param: ~harmoniumSetParam.(param, value)".postln;
 "  - Panic: ~harmoniumPanic.()".postln;
 "  - MIDI: ~harmoniumEnableMIDI.() / ~harmoniumDisableMIDI.()".postln;
 "  - Test: ~harmoniumTest.()".postln;
-"  - VOCODER MODE: Set source to 16, use ~harmoniumStartRouting.(trackNum)".postln;
+"  - VOCODER MODE (NEW):".postln;
+"    • ~enableHarmoniumVocoder.(trackNum, midiNote, velocity)".postln;
+"    • ~disableHarmoniumVocoder.()".postln;
