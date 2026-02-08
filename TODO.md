@@ -4,7 +4,7 @@
 
 - [x] Harmonium. When source is set to TRACK AUDIO (Vocoder), all sound STOPS when i press START. **FIXED:** Variable name mismatch (`track.directSynth` → `track.directPlaybackSynth`) caused Direct engine to not be redirected while master bus was muted.
 - [x] Keystep: Connect button should be clustered together with SYNC Manager and Keystep MIDI track selector in the GUI's Main/Master section. **FIXED:** Moved from line 1392 to line 820, now directly between BPM controls and track selectors.
-- [ ] TAP Tempo: Button does not change numerical value in BPM box.
+- [x] TAP Tempo: Button does not change numerical value in BPM box. **FIXED:** Added setMainBpmBox() method to sync-manager and registered main window BPM box for updates.
 - [ ] SYNC Manager: Clarity and Control. Needs discussion. Current behavior of randomized hits and loosely controlled tempos is unexpected; desired behavior is tighter, more predictable tempo and synchronization, similar to a drum machine.
 - [ ] RESET PARAMS Function: Continue testing and work on fixing its inconsistent behavior; it has never worked 100%.
 - [ ] Waveform Display / Granular Position: The graphical representation of granular position is inaccurate when a loop is selected. Request: Limit granular position graphic to the looped selection, zoom waveform to the loop size upon selection, and allow easy zoom-out/new selection by clicking and dragging.

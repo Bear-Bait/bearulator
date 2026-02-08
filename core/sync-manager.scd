@@ -32,6 +32,7 @@ USAGE:
 	var clock = TempoClock.default;
 	var tapTimes = List.new;  // For tap tempo
 	var lastTap = 0;
+	var mainBpmBox = nil;  // Reference to main window BPM box (for tap tempo updates)
 	var publicAPI;
 
 	// ═════════════════════════════════════════════════════
@@ -56,11 +57,20 @@ USAGE:
 		
 		setBPM: { arg self, bpm;
 			clock.tempo = bpm / 60;
+			// Update main window BPM box if registered
+			if(mainBpmBox.notNil, {
+				{ mainBpmBox.value_(bpm) }.defer;
+			});
 			"✓ Global Tempo: % BPM (% beats/sec)".format(bpm, clock.tempo.round(0.01)).postln;
 		},
 
 		getBPM: { arg self;
 			(clock.tempo * 60).round(0.1);
+		},
+
+		// Register main window BPM NumberBox for tap tempo updates
+		setMainBpmBox: { arg self, box;
+			mainBpmBox = box;
 		},
 
 		// --- Snap Track to Rhythmic Grid (OVERLAP MATH) ---

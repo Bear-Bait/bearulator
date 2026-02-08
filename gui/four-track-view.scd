@@ -758,6 +758,11 @@ Phase 7 Features:
 				});
 			});
 
+		// Register BPM box with sync manager for tap tempo updates
+		if(~syncManager.notNil, {
+			~syncManager.setMainBpmBox(bpmBox);
+		});
+
 		// Tap Tempo Button
 		Button(parent, Rect(leftColX + 100, leftY, 85, 25))
 			.states_([["TAP TEMPO", colors.fg, Color.gray(0.3)]])
