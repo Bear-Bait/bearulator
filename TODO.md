@@ -2,7 +2,7 @@
 
 # DAT Feb 8 TROUBLESHOOTING
 
-- [ ] Harmonium. When source is set to TRACK AUDIO (Vocoder), all sound STOPS when i press START. Have not tested with anything other than track 1.
+- [x] Harmonium. When source is set to TRACK AUDIO (Vocoder), all sound STOPS when i press START. **FIXED:** Variable name mismatch (`track.directSynth` → `track.directPlaybackSynth`) caused Direct engine to not be redirected while master bus was muted.
 - [ ] Keystep: Connect button should be clustered together with SYNC Manager and Keystep MIDI track selector in the GUI's Main/Master section.
 - [ ] TAP Tempo: Button does not change numerical value in BPM box.
 - [ ] SYNC Manager: Clarity and Control. Needs discussion. Current behavior of randomized hits and loosely controlled tempos is unexpected; desired behavior is tighter, more predictable tempo and synchronization, similar to a drum machine.

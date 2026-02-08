@@ -644,8 +644,8 @@ Public API:
 			});
 
 			// Also redirect direct playback synth if active
-			if(track.directSynth.notNil, {
-				track.directSynth.set(\out, destinationBus, \amp, 1.0);
+			if(track.directPlaybackSynth.notNil, {
+				track.directPlaybackSynth.set(\out, destinationBus, \amp, 1.0);
 			});
 
 			// Mute this track in the master bus (no double signal)
@@ -691,8 +691,8 @@ Public API:
 			});
 
 			// Restore direct playback synth
-			if(track.directSynth.notNil, {
-				track.directSynth.set(
+			if(track.directPlaybackSynth.notNil, {
+				track.directPlaybackSynth.set(
 					\out, track.savedRouting.originalOutBus,
 					\amp, track.savedRouting.originalAmp
 				);
