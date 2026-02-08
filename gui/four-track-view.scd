@@ -819,6 +819,42 @@ Phase 7 Features:
 
 		leftY = leftY + 32;
 
+		// === KEYSTEP PRO CONNECT/DISCONNECT ===
+		Button(parent, Rect(leftColX, leftY, 180, 28))
+			.states_([
+				["KeyStep: DISCONNECTED", Color.white, Color.gray(0.4)],
+				["KeyStep: CONNECTED", Color.white, Color.new255(0, 170, 170)] // Cyan
+			])
+			.value_(if(~keyStepProMapping.notNil, { ~keyStepProMapping.enabled.asInteger }, { 0 }))
+			.action_({ |btn|
+				if(btn.value == 1, {
+					// === CONNECT ===
+					"Attempting to connect KeyStep Pro...".postln;
+
+					// 1. Refresh MIDI Devices (Handles hot-plugging)
+					MIDIClient.init;
+					MIDIIn.connectAll;
+
+					// 2. Initialize the Mapping
+					try {
+						~keyStepProMapping.init(~trackManager);
+						"✓ KeyStep Pro Linked Successfully".postln;
+					} { |err|
+						"❌ Error connecting KeyStep:".postln;
+						err.postln;
+						btn.value = 0; // Revert button if failed
+					};
+				}, {
+					// === DISCONNECT ===
+					"Disconnecting KeyStep Pro...".postln;
+					~keyStepProMapping.free;
+					"✓ KeyStep Pro Freed".postln;
+				});
+			})
+			.font_(Font("Helvetica", 11, true));
+
+		leftY = leftY + 35;
+
 		// === KEYSTEP PRO ROUTING (compact 1-row) ===
 		StaticText(parent, Rect(leftColX, leftY, 120, 18))
 			.string_("KEYSTEP MIDI:")
@@ -1388,42 +1424,6 @@ Phase 7 Features:
 			});
 
 		leftY = leftY + 35;
-
-		// === KEYSTEP PRO CONNECT/DISCONNECT BUTTON ===
-		Button(parent, Rect(leftColX, leftY, 180, 30))
-			.states_([
-				["KeyStep: DISCONNECTED", Color.white, Color.gray(0.4)],
-				["KeyStep: CONNECTED", Color.white, Color.new255(0, 170, 170)] // Cyan
-			])
-			.value_(if(~keyStepProMapping.notNil, { ~keyStepProMapping.enabled.asInteger }, { 0 }))
-			.action_({ |btn|
-				if(btn.value == 1, {
-					// === CONNECT ===
-					"Attempting to connect KeyStep Pro...".postln;
-
-					// 1. Refresh MIDI Devices (Handles hot-plugging)
-					MIDIClient.init;
-					MIDIIn.connectAll;
-
-					// 2. Initialize the Mapping
-					try {
-						~keyStepProMapping.init(~trackManager);
-						"✓ KeyStep Pro Linked Successfully".postln;
-					} { |err|
-						"❌ Error connecting KeyStep:".postln;
-						err.postln;
-						btn.value = 0; // Revert button if failed
-					};
-				}, {
-					// === DISCONNECT ===
-					"Disconnecting KeyStep Pro...".postln;
-					~keyStepProMapping.free;
-					"✓ KeyStep Pro Freed".postln;
-				});
-			})
-			.font_(Font("Helvetica", 12, true));
-
-		leftY = leftY + 40;
 
 		// === PHASE 16: DISINTEGRATE MACRO ===
 		StaticText(parent, Rect(leftColX, leftY, 400, 25))
