@@ -207,7 +207,9 @@ Public API:
 				wowRate: 0.5,          // Wow LFO frequency (0.1-2 Hz)
 				wowDepth: 0.0,         // Wow intensity (0.0-1.0)
 				flutterRate: 10.0,     // Flutter LFO frequency (5-15 Hz)
-				flutterDepth: 0.0      // Flutter intensity (0.0-1.0)
+				flutterDepth: 0.0,     // Flutter intensity (0.0-1.0)
+				// Phase 19: Unified Tape Rate (Varispeed)
+				tapeRate: 1.0          // Unified speed+pitch control (0.5=half speed, 2.0=double speed)
 			);
 
 			track.params = defaultParams.copy;
@@ -352,6 +354,47 @@ Public API:
 		track.params[param] = value;
 
 		// --- SPECIAL PARAMETER HANDLING (Using 'handled' flag instead of ^return) ---
+
+		// =================================================================
+		// PHASE 19: UNIFIED TAPE RATE (VARISPEED)
+		// Controls Speed + Pitch simultaneously for ALL engines
+		// Makes the granular workstation feel like a hardware sampler
+		// =================================================================
+		if(param == \tapeRate, {
+			var tapeSpeed = value;
+			var tapePitch;
+
+			// Calculate pitch shift in semitones: 12 * log2(rate)
+			// Limit to avoid log of 0 or negative (unless handling reverse)
+			tapePitch = if(tapeSpeed.abs > 0.001, {
+				tapeSpeed.abs.log2 * 12
+			}, { -128 }); // Silence/Low if rate ≈ 0
+
+			// 1. DIRECT ENGINE: Simply set the rate (it handles pitch naturally)
+			if(track.directPlaybackSynth.notNil, {
+				track.directPlaybackSynth.set(\rate, tapeSpeed);
+			});
+
+			// 2. GRANULAR ENGINE: Link Scan Speed (Time) and Pitch (Freq)
+			if(track.grainSynth.notNil, {
+				track.grainSynth.set(
+					\scanSpeed, tapeSpeed,
+					\pitch, tapePitch  // Natively repitches the grains
+				);
+			});
+
+			// 3. SPECTRAL ENGINE: Link Playback Rate and Bin Shift
+			if(track.spectralSynth.notNil, {
+				track.spectralSynth.set(
+					\rate, tapeSpeed,
+					\pitch, tapePitch
+				);
+			});
+
+			handled = true;
+			"Track %: Tape Rate % (Pitch % st)".format(trackNum + 1, tapeSpeed.round(0.01), tapePitch.round(0.1)).postln;
+		});
+		// =================================================================
 
 		// 1. ENGINE MIX (Smart Sleep)
 		if(param == \engineMix, {
@@ -928,81 +971,104 @@ Public API:
 		},
 
 		// CORE LOGIC: RECYCLE TRACK (Reset to Init State)
+		// Phase 19: COMPREHENSIVE RESET - Actually restores ALL 80+ parameters
 		// Makes the track feel "new" by killing audio glitches immediately,
 		// then restoring factory defaults. This is the "Source of Truth" for
 		// default parameter values - update here when changing defaults.
-		// CORE LOGIC: RECYCLE TRACK (Reset to Init State) - VERBOSE DEBUG
 		resetParams: { arg self, trackNum;
 			var track = tracks[trackNum];
 			var defaults;
 
-			"--- DEBUG: resetParams called for Track % ---".format(trackNum + 1).postln;
-
 			if(track.grainSynth.isNil, {
-				"ERROR: Track % grainSynth is nil".format(trackNum + 1).postln;
+				"Track %: Not initialized, cannot reset".format(trackNum + 1).warn;
 				^nil;
 			});
 
-			// 1. HARD RESET AUDIO
-			"DEBUG: 1. Engaging Audio Kill Switches...".postln;
+			// 1. HARD RESET AUDIO (kill feedback loops immediately)
 			if(track.grainSynth.notNil) {
-				try {
-					track.grainSynth.set(
-						\pitch, 0, \pitchShift, 0,
-						\timeStretch, 1.0, \scanSpeed, 0,
-						\delayFeedback, 0.0,
-						\reverbFreeze, 0,
-						\shimmerFeedback, 0.0,
-						\feedback, 0.0, \posJitter, 0.1, \pitchJitter, 0.0,
-						\grainSize, 0.1
-					);
-					"DEBUG:    > Audio killed successfully".postln;
-				} { |err|
-					"ERROR: Failed during Audio Kill Switch".postln;
-					err.errorString.postln;
-				};
+				track.grainSynth.set(
+					\pitch, 0, \pitchShift, 0,
+					\timeStretch, 1.0, \scanSpeed, 0,
+					\delayFeedback, 0.0,
+					\reverbFreeze, 0,
+					\shimmerFeedback, 0.0,
+					\posJitter, 0.1, \pitchJitter, 0.0,
+					\grainSize, 0.1
+				);
 			};
 
-			// 2. RESTORE FACTORY DEFAULTS
-			"DEBUG: 2. Restoring Default Parameters...".postln;
+			// 2. FREE ALL ACTIVE MODULATORS (prevents stuck modulation)
+			4.do({ |modNum|
+				if(track.modulators[modNum].notNil, {
+					self.freeModulator(trackNum, modNum);
+				});
+			});
 
+			// 3. RESTORE FACTORY DEFAULTS (COMPLETE LIST)
 			defaults = [
+				// Core grain parameters
 				[\amp, 0.5], [\pan, 0],
 				[\grainSize, 0.1], [\density, 30], [\overlap, 1], [\useOverlap, 1],
-				[\prob, 1.0], [\loFiGrains, 0],  // v2.2 & v2.3 additions
+				[\prob, 1.0], [\loFiGrains, 0],
 				[\pitch, 0], [\pitchShift, 0], [\timeStretch, 1.0],
 				[\scanSpeed, 0], [\position, 0.0],
 				[\posJitter, 0.1], [\pitchJitter, 0.0],
-				// Note: Arrays like posSeq might be tricky, watch these
 				[\posSeq, Array.fill(64, 0)], [\pitchSeq, Array.fill(64, 0)],
-				[\grainMode, 0], [\engineMix, 0.0],
-				[\filterOn, 0], [\colorOn, 0], [\spaceOn, 0],
+				[\grainMode, 0], [\envType, 1], [\stereoSpread, 0.5],
+				[\loopStart, 0.0], [\loopEnd, 1.0],
+
+				// Engine control
+				[\engineMix, 0.0], [\grainOn, 1], [\spectralOn, 1], [\directOn, 1],
+				[\tapeRate, 1.0],
+
+				// Spectral engine
 				[\spectralMix, 0.0], [\spectralPosition, 0.5], [\spectralRate, 1.0],
 				[\spectralWindowSize, 0.1], [\spectralOverlaps, 4],
 				[\spectralPitch, 0], [\spectralFreeze, 0], [\spectralSmear, 0],
-				[\loopStart, 0.0], [\loopEnd, 1.0],
-				[\envType, 1], [\stereoSpread, 0.5],
+				[\spectralAmp, 0.5],
+
+				// Wow & Flutter
+				[\wowRate, 0.5], [\wowDepth, 0.0],
+				[\flutterRate, 10.0], [\flutterDepth, 0.0],
+
+				// Filter
+				[\filterOn, 0], [\filterType, 0], [\filterFreq, 200],
+				[\filterMorph, 0.5], [\filterRes, 0.5], [\filterDecay, 0.5],
+				[\filterAnimate, 0], [\filterAnimRate, 0.5],
+				[\filterTuning, 0], [\filterSpread, 1.5], [\filterMix, 0.5],
+				[\ringsBright, 0.5], [\ringsDamp, 0.7], [\ringsPos, 0.25], [\ringsModel, 0],
+
+				// Color effects
+				[\colorOn, 0],
+				[\phaserRate, 0.5], [\phaserMix, 0],
+				[\distCrossover, 500], [\distLoDrive, 1], [\distHiDrive, 1], [\distMix, 0],
+				[\crushRate, 8000], [\crushBits, 8], [\crushMix, 0],
+				[\squizAmount, 1], [\squizMix, 0],
+				[\compThresh, 0.5], [\compRatio, 4], [\compAttack, 0.01], [\compRelease, 0.1],
+				[\noiseType, 0], [\noiseAmount, 0],
+
+				// Space effects
+				[\spaceOn, 0],
+				[\reverbType, 0], [\reverbSize, 0.5], [\reverbDamp, 0.5],
+				[\reverbFreeze, 0], [\reverbMix, 0.3],
+				[\delayTime, 0.25], [\delayFeedback, 0.5], [\delayFilter, 5000],
+				[\delayPingPong, 0], [\delayMix, 0.3],
+				[\shimmerTime, 0.5], [\shimmerFeedback, 0.6], [\shimmerPitch, 12],
+				[\shimmerWindowSize, 0.2], [\shimmerMix, 0],
+
+				// Pitch quantization
 				[\scale, [0, 2, 4, 5, 7, 9, 11]], [\quantizePitch, 0]
 			];
 
-			"DEBUG: About to process % parameters...".format(defaults.size).postln;
-
-			defaults.do({ |pair, i|
-				// UNCOMMENTED DEBUG LINE:
-				"DEBUG:    [%] Setting % ...".format(i, pair[0]).postln;
-
-				try {
-					self.setParam(trackNum, pair[0], pair[1]);
-					"DEBUG:       > OK".postln;
-				} { |err|
-					"!!! CRASH ON PARAMETER: % !!!".format(pair[0]).postln;
-					"ERROR: %".format(err.errorString).postln;
-				};
+			// Apply all defaults
+			defaults.do({ |pair|
+				self.setParam(trackNum, pair[0], pair[1]);
 			});
 
-			"DEBUG: Loop complete. About to print final message...".postln;
-			"✓ DEBUG: Track % reset complete.".format(trackNum + 1).postln;
-			"-------------------------------------------".postln;
+			"✓ Track % FULLY RESET (% params + modulators cleared)".format(
+				trackNum + 1,
+				defaults.size
+			).postln;
 		},
 
 		// HYBRID ENGINE: Clear track (wipe buffer, reset params, stop synths)

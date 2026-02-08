@@ -1,5 +1,13 @@
 # BEARULATOR: Master TODO List
 
+# DAT Feb 8 TROUBLESHOOTING
+
+- [ ] Harmonium. When source is set to TRACK AUDIO (Vocoder), all sound STOPS when i press START. Have not tested with anything other than track 1.
+- [ ] Keystep: Connect button should be clustered together with SYNC Manager and Keystep MIDI track selector in the GUI's Main/Master section.
+- [ ] TAP Tempo: Button does not change numerical value in BPM box.
+- [ ] SYNC Manager: Clarity and Control. Needs discussion. Current behavior of randomized hits and loosely controlled tempos is unexpected; desired behavior is tighter, more predictable tempo and synchronization, similar to a drum machine.
+- [ ] RESET PARAMS Function: Continue testing and work on fixing its inconsistent behavior; it has never worked 100%.
+
 **Current Version:** v2.2 (January 2026)
 
 ---
@@ -70,6 +78,14 @@
 - **[ ] Preset Management GUI:** A visual browser for managing presets.
 - **[ ] Track Naming System:** Allow users to name their tracks.
 - **[ ] Neon Glow Rendering:** Implement hardware-accelerated "glow" visuals.
+- **[ ] Quad Panner: Add 'motion' options (e.g., Circular, Random) with reference to `examples/quad-spatial-examples.scd` for inspiration.
+- **[ ] Comprehensive Recording Function:** Implement a function to record speaker output (including MOTU inputs) to WAV files in `samples/recordings`, with selectable input sources.
+
+### Project Health & Workflow Enhancements
+- **[ ] Addressing Existing Issues:** Review `COMMON-BUGS.md` and `TODO.md` to prioritize and resolve known bugs and pending tasks. Investigate the purpose of `fix-spectral-safe.scd` and `fix-spectral.scd` to ensure spectral issues are fully resolved.
+- **[ ] Feature Enhancement/Refinement:** Go through `IMPROVEMENT-SUGGESTIONS.md` to identify and implement valuable new features or enhancements. Consider areas where the granular engine's interaction might be confusing (like the `timeStretch` / `scanSpeed` example) and improve documentation or UI feedback.
+- **[ ] Testing and Stabilization:** Ensure comprehensive testing, especially for recent changes related to `v2.4`. Following the `TESTING-GUIDE.md` to create or update test scripts for any modifications we make. Verify the stability of the `sc3-plugins` dependency.
+- **[ ] Codebase Understanding and Documentation:** Continue to use `main.scd` and `track-manager.scd` as primary guides for understanding the system's flow. Potentially update `gemini.md` or other relevant documentation with specific operational details for parameters like `timeStretch` in the granular engine to prevent future confusion.
 
 ---
 

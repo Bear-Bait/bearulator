@@ -457,7 +457,18 @@ Phase 7 Features:
 				"Track % engines STOPPED".format(trackNum + 1).postln;
 			});
 
-		yPos = yPos + 50;  // Add spacing after playback section
+		yPos = yPos + 40;
+
+		// Phase 19: Tape Rate (Varispeed) - Links speed+pitch across all engines
+		makeSlider.value(parent, col1X, yPos, "Tape Rate (Varispeed)",
+			ControlSpec(0.25, 4.0, \exp), \tapeRate, trackNum, 1.0);
+
+		StaticText(parent, Rect(col1X + 350, yPos, 180, 18))
+			.string_("← 0.5=half/-12st, 2.0=double/+12st")
+			.font_(Font("DejaVu Sans Mono", 8))
+			.stringColor_(Color.gray(0.5));
+
+		yPos = yPos + 30;  // Add spacing after tape rate
 
 		// Note about detailed grain controls
 		StaticText(parent, Rect(col1X, yPos, 400, 18))
