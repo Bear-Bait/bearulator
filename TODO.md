@@ -9,32 +9,24 @@
 - [x] RESET PARAMS Function: Continue testing and work on fixing its inconsistent behavior; it has never worked 100%. **FIXED (Phase 19):** Expanded from ~15 to 61 parameters, now clears all modulators, comprehensive test script created.
 - [ ] Waveform Display / Granular Position: The graphical representation of granular position is inaccurate when a loop is selected. Request: Limit granular position graphic to the looped selection, zoom waveform to the loop size upon selection, and allow easy zoom-out/new selection by clicking and dragging.
 
-**Current Version:** v2.2 (January 2026)
+**Current Version:** v2.4 (deployed, includes v2.1-2.4 features)
 
 ---
 
-## 🎯 **Immediate Priorities: The v2.1 Engine Deployment**
+## 🎯 **Completed Recent Milestones**
 
-### 1. Deploy v2.1 Engine
-**Status:** **High Priority.** The current v2.0 engine has critical audio bugs.
-**Action:** Overwrite the contents of `core/grain-engine.scd` with the v2.1 code stored in `bearulator_project_state.org`.
-**Verification:**
-- Run the "Deploy Script" from `bearulator_project_state.org`.
-- Confirm that switching filters and modes no longer causes audio glitches.
-- Verify `timeStretch` at 0.0 freezes audio without a pitch drop.
-- Verify `pitchSeq` accepts 64-step arrays.
+### ✅ v2.4 Engine (DEPLOYED)
+- v2.1: Decoupled Time/Pitch, 64-Step Sequencer, Click-Free Switching
+- v2.2: Probability Masking (Bernoulli Gate)
+- v2.3: LO-FI Grain Switch (6 density modes)
+- v2.4: Enhanced Effects (Barberpole Phaser, Squiz, Acid Filter, Greyhole, MiRings)
+- Phase 19: Unified Tape Rate (Varispeed control linking speed+pitch)
 
-### 2. Create "Sigur Ros" Preset
-**Status:** Pending v2.1 deployment.
-**Objective:** Create a generative ambient preset rivaling "1-5fq".
-**Recipe:**
-- **Sample:** Pure Rhodes, Chime, or Female Vocal.
-- **Settings:** `timeStretch` = 0.1, `reverbMix` = 0.7, `shimmerMix` = 0.5.
-- **Sequencer:** 64-step slow drift on a Pentatonic scale.
-
-### 3. Implement `DiskOut` for Recording
-**Status:** Pending v2.1 deployment.
-**Task:** Implement `DiskOut` in the engine to record the output directly to a WAV file, building a sample library.
+### ✅ Feb 8 Troubleshooting (4/6 Fixed)
+- Harmonium vocoder silence bug
+- KeyStep Connect button placement
+- TAP TEMPO BPM display
+- RESET PARAMS comprehensive improvements
 
 
 
