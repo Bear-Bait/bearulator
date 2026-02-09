@@ -7,7 +7,7 @@
 - [x] TAP Tempo: Button does not change numerical value in BPM box. **FIXED:** Added setMainBpmBox() method to sync-manager and registered main window BPM box for updates.
 - [ ] SYNC Manager: Clarity and Control. Needs discussion. Current behavior of randomized hits and loosely controlled tempos is unexpected; desired behavior is tighter, more predictable tempo and synchronization, similar to a drum machine.
 - [x] RESET PARAMS Function: Continue testing and work on fixing its inconsistent behavior; it has never worked 100%. **FIXED (Phase 19):** Expanded from ~15 to 61 parameters, now clears all modulators, comprehensive test script created.
-- [ ] Waveform Display / Granular Position: The graphical representation of granular position is inaccurate when a loop is selected. Request: Limit granular position graphic to the looped selection, zoom waveform to the loop size upon selection, and allow easy zoom-out/new selection by clicking and dragging.
+- [x] Waveform Display / Granular Position: The graphical representation of granular position is inaccurate when a loop is selected. **FIXED (Phase 20):** Implemented view-relative coordinates for all playheads, auto-zoom to loop selection, and ZOOM FULL button. Consulted with Gemini AI for optimal approach.
 
 **Current Version:** v2.4 (deployed, includes v2.1-2.4 features)
 

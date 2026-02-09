@@ -340,24 +340,31 @@ Usage:
 							grainActive = if(grainEngineButton.notNil, { grainEngineButton.value == 1 }, { false });
 
 							if(grainActive, {
-								// FIX: Map playhead position to screen coordinates
-								// grainPlayheadPos is already constrained to loop by Phasor
-								// Just need to draw it at the correct pixel position
-								var grainPlayheadPixels = grainPlayheadPos * viewWidth;
+								// Phase 20: View-relative coordinates (works when zoomed)
+								var totalFrames = currentBuffer.numFrames;
+								var currentFrame = grainPlayheadPos * totalFrames;
+								var startFrame = sfv.scrollPos * totalFrames;
+								var viewFrames = sfv.viewFrames;
+								var grainPlayheadPixels;
 
-								// Bright green line for grain engine
-								Pen.color = colors.green.alpha_(0.85);
-								Pen.width = 2;
-								Pen.line(Point(grainPlayheadPixels, 0), Point(grainPlayheadPixels, viewHeight));
-								Pen.stroke;
+								// Only draw if playhead is visible in current view
+								if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
+									grainPlayheadPixels = (currentFrame - startFrame) / viewFrames * viewWidth;
 
-								// Small label
-								Pen.stringAtPoint(
-									"Grain",
-									Point(grainPlayheadPixels + 5, viewHeight - 35),
-									Font("DejaVu Sans Mono", 8),
-									colors.green
-								);
+									// Bright green line for grain engine
+									Pen.color = colors.green.alpha_(0.85);
+									Pen.width = 2;
+									Pen.line(Point(grainPlayheadPixels, 0), Point(grainPlayheadPixels, viewHeight));
+									Pen.stroke;
+
+									// Small label
+									Pen.stringAtPoint(
+										"Grain",
+										Point(grainPlayheadPixels + 5, viewHeight - 35),
+										Font("DejaVu Sans Mono", 8),
+										colors.green
+									);
+								});
 							});
 						});
 
@@ -367,21 +374,31 @@ Usage:
 							spectralActive = if(spectralEngineButton.notNil, { spectralEngineButton.value == 1 }, { false });
 
 							if(spectralActive, {
-								var spectralPlayheadPixels = spectralPlayheadPos * viewWidth;
+								// Phase 20: View-relative coordinates (works when zoomed)
+								var totalFrames = currentBuffer.numFrames;
+								var currentFrame = spectralPlayheadPos * totalFrames;
+								var startFrame = sfv.scrollPos * totalFrames;
+								var viewFrames = sfv.viewFrames;
+								var spectralPlayheadPixels;
 
-								// Bright yellow line for spectral engine
-								Pen.color = colors.yellow.alpha_(0.85);
-								Pen.width = 2;
-								Pen.line(Point(spectralPlayheadPixels, 0), Point(spectralPlayheadPixels, viewHeight));
-								Pen.stroke;
+								// Only draw if playhead is visible in current view
+								if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
+									spectralPlayheadPixels = (currentFrame - startFrame) / viewFrames * viewWidth;
 
-								// Small label
-								Pen.stringAtPoint(
-									"Spectral",
-									Point(spectralPlayheadPixels + 5, viewHeight - 20),
-									Font("DejaVu Sans Mono", 8),
-									colors.yellow
-								);
+									// Bright yellow line for spectral engine
+									Pen.color = colors.yellow.alpha_(0.85);
+									Pen.width = 2;
+									Pen.line(Point(spectralPlayheadPixels, 0), Point(spectralPlayheadPixels, viewHeight));
+									Pen.stroke;
+
+									// Small label
+									Pen.stringAtPoint(
+										"Spectral",
+										Point(spectralPlayheadPixels + 5, viewHeight - 20),
+										Font("DejaVu Sans Mono", 8),
+										colors.yellow
+									);
+								});
 							});
 						});
 
@@ -391,47 +408,67 @@ Usage:
 							var directActive = track.params[\engineMix] >= 0.3;  // Show when Direct is audible
 
 							if(directActive, {
-								var directPlayheadPixels = directPlayheadPos * viewWidth;
+								// Phase 20: View-relative coordinates (works when zoomed)
+								var totalFrames = currentBuffer.numFrames;
+								var currentFrame = directPlayheadPos * totalFrames;
+								var startFrame = sfv.scrollPos * totalFrames;
+								var viewFrames = sfv.viewFrames;
+								var directPlayheadPixels;
 
-								// Bright white line for direct playback
-								Pen.color = Color.white.alpha_(0.9);
-								Pen.width = 3;
-								Pen.line(Point(directPlayheadPixels, 0), Point(directPlayheadPixels, viewHeight));
-								Pen.stroke;
+								// Only draw if playhead is visible in current view
+								if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
+									directPlayheadPixels = (currentFrame - startFrame) / viewFrames * viewWidth;
 
-								// Small label
-								Pen.stringAtPoint(
-									"DIRECT",
-									Point(directPlayheadPixels + 5, viewHeight - 50),
-									Font("DejaVu Sans Mono", 8, true),
-									Color.white
-								);
+									// Bright white line for direct playback
+									Pen.color = Color.white.alpha_(0.9);
+									Pen.width = 3;
+									Pen.line(Point(directPlayheadPixels, 0), Point(directPlayheadPixels, viewHeight));
+									Pen.stroke;
+
+									// Small label
+									Pen.stringAtPoint(
+										"DIRECT",
+										Point(directPlayheadPixels + 5, viewHeight - 50),
+										Font("DejaVu Sans Mono", 8, true),
+										Color.white
+									);
+								});
 							});
 						});
 
 						// === LAYER 5: Recording Playhead (Phase 15 - @ 30Hz) ===
 						// Red playhead showing current recording position
 						if(recPlayheadPos.notNil and: { currentBuffer.notNil }, {
-							var recPlayheadPixels = recPlayheadPos * viewWidth;
+							// Phase 20: View-relative coordinates (works when zoomed)
+							var totalFrames = currentBuffer.numFrames;
+							var currentFrame = recPlayheadPos * totalFrames;
+							var startFrame = sfv.scrollPos * totalFrames;
+							var viewFrames = sfv.viewFrames;
+							var recPlayheadPixels;
 							var pulseAlpha = (Main.elapsedTime * 3).sin.abs;
 
-							// Bright red line with glow
-							Pen.color = Color.red.alpha_(0.95);
-							Pen.width = 3;
-							Pen.line(Point(recPlayheadPixels, 0), Point(recPlayheadPixels, viewHeight));
-							Pen.stroke;
+							// Only draw if playhead is visible in current view
+							if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
+								recPlayheadPixels = (currentFrame - startFrame) / viewFrames * viewWidth;
 
-							// Pulsing "REC" label
-							Pen.stringAtPoint(
-								"REC",
-								Point(recPlayheadPixels + 5, 10),
-								Font("DejaVu Sans Mono", 10, true),
-								Color.red
-							);
+								// Bright red line with glow
+								Pen.color = Color.red.alpha_(0.95);
+								Pen.width = 3;
+								Pen.line(Point(recPlayheadPixels, 0), Point(recPlayheadPixels, viewHeight));
+								Pen.stroke;
 
-							// Pulsing red dot indicator
-							Pen.fillColor = Color.red.alpha_(pulseAlpha);
-							Pen.fillOval(Rect(recPlayheadPixels - 5, 5, 10, 10));
+								// Pulsing "REC" label
+								Pen.stringAtPoint(
+									"REC",
+									Point(recPlayheadPixels + 5, 10),
+									Font("DejaVu Sans Mono", 10, true),
+									Color.red
+								);
+
+								// Pulsing red dot indicator
+								Pen.fillColor = Color.red.alpha_(pulseAlpha);
+								Pen.fillOval(Rect(recPlayheadPixels - 5, 5, 10, 10));
+							});
 						});
 
 						// === LAYER 5: GRAIN PULSE ANIMATION (Phase 11/15) ===
@@ -441,25 +478,34 @@ Usage:
 							grainActive = if(grainEngineButton.notNil, { grainEngineButton.value == 1 }, { false });
 
 							if(grainActive, {
-								var pulseX = grainPlayheadPos * viewWidth;
+								// Phase 20: View-relative coordinates (works when zoomed)
+								var totalFrames = currentBuffer.numFrames;
+								var currentFrame = grainPlayheadPos * totalFrames;
+								var startFrame = sfv.scrollPos * totalFrames;
+								var viewFrames = sfv.viewFrames;
+								var pulseX;
 								var pulseY = viewHeight / 2;
 								var overlap = track.params[\overlap] ? 4;
 
-								// Create subtle pulse effect based on grain density
-								// Higher overlap = more frequent pulses (visual feedback for grain density)
-								var pulsePhase = (Date.getDate.rawSeconds * overlap * 2).mod(1.0);
-								var pulseRadius = pulsePhase.linlin(0, 1, 5, 25);
-								var pulseAlpha = (1 - pulsePhase) * 0.3;
+								// Only draw if playhead is visible in current view
+								if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
+									pulseX = (currentFrame - startFrame) / viewFrames * viewWidth;
 
-								// Draw expanding ring (green for grain engine)
-								Pen.strokeColor = colors.green.alpha_(pulseAlpha);
-								Pen.width = 2;
-								Pen.strokeOval(Rect(
-									pulseX - pulseRadius,
-									pulseY - pulseRadius,
-									pulseRadius * 2,
-									pulseRadius * 2
-								));
+									// Create subtle pulse effect based on grain density
+									// Higher overlap = more frequent pulses (visual feedback for grain density)
+									var pulsePhase = (Date.getDate.rawSeconds * overlap * 2).mod(1.0);
+									var pulseRadius = pulsePhase.linlin(0, 1, 5, 25);
+									var pulseAlpha = (1 - pulsePhase) * 0.3;
+
+									// Draw expanding ring (green for grain engine)
+									Pen.strokeColor = colors.green.alpha_(pulseAlpha);
+									Pen.width = 2;
+									Pen.strokeOval(Rect(
+										pulseX - pulseRadius,
+										pulseY - pulseRadius,
+										pulseRadius * 2,
+										pulseRadius * 2
+									));
 							});
 						});
 
@@ -762,6 +808,11 @@ Usage:
 					postf("  Start: %s (%.1f%%)\n", startTime, loopStart * 100);
 					postf("  End: %s (%.1f%%)\n", endTime, loopEnd * 100);
 					postf("  Duration: %s\n", loopDur);
+
+					// Phase 20: Auto-zoom to loop selection
+					if(cropMode.not, {
+						{ sfv.zoomToSelection(0) }.defer;
+					});
 				});
 			};
 
@@ -1151,7 +1202,18 @@ Usage:
 
 				transportY = transportY + 30;
 
-				// Row 3: PATTERNS button (full width)
+				// Row 3: ZOOM FULL button
+				Button(win, Rect(transportX, transportY, 145, 25))
+					.states_([["⊡ ZOOM FULL", Color.white, Color.blue(0.5)]])
+					.font_(Font("DejaVu Sans Mono", 9, true))
+					.action_({
+						{ sfv.zoomAll }.defer;
+						"✓ Waveform view reset to full buffer".postln;
+					});
+
+				transportY = transportY + 30;
+
+				// Row 4: PATTERNS button (full width)
 				Button(win, Rect(transportX, transportY, 145, 25))
 					.states_([["🎵 PATTERNS", Color.white, Color.fromHexString("#89DDFF").alpha_(0.6)]])
 					.font_(Font("DejaVu Sans Mono", 9, true))
@@ -1161,7 +1223,7 @@ Usage:
 			}.value;
 
 			// Continue with sliders below
-			yPos = yPos + 130;  // Shift down past the halo knob and 3-row transport/utility buttons
+			yPos = yPos + 160;  // Shift down past the halo knob and 4-row transport/utility buttons
 
 			makeSlider.value(win, 10, yPos, "Position", ControlSpec(0, 1, \lin), \position, track.params[\position] ? 0.0);
 			yPos = yPos + 22;
