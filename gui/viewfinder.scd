@@ -27,7 +27,7 @@ Usage:
 		// Create viewfinder window for a specific track
 		createWindow: { arg self, trackNum = 0;
 			var win, sfv, track, buffer;
-			var winWidth = 900, winHeight = 650;  // Phase 7c: Expanded for Pitch Jitter slider
+			var winWidth = 900, winHeight = 720;  // Phase 7c: Expanded for Pitch Jitter slider
 			var trackName, statusText, colors;
 			var makeSlider;  // Phase 7: Slider helper function
 			var yPos;  // Phase 7: Y position for slider layout
@@ -486,6 +486,7 @@ Usage:
 								var pulseX;
 								var pulseY = viewHeight / 2;
 								var overlap = track.params[\overlap] ? 4;
+								var pulsePhase, pulseRadius, pulseAlpha;
 
 								// Only draw if playhead is visible in current view
 								if((currentFrame >= startFrame) and: { currentFrame <= (startFrame + viewFrames) }, {
@@ -493,9 +494,9 @@ Usage:
 
 									// Create subtle pulse effect based on grain density
 									// Higher overlap = more frequent pulses (visual feedback for grain density)
-									var pulsePhase = (Date.getDate.rawSeconds * overlap * 2).mod(1.0);
-									var pulseRadius = pulsePhase.linlin(0, 1, 5, 25);
-									var pulseAlpha = (1 - pulsePhase) * 0.3;
+									pulsePhase = (Date.getDate.rawSeconds * overlap * 2).mod(1.0);
+									pulseRadius = pulsePhase.linlin(0, 1, 5, 25);
+									pulseAlpha = (1 - pulsePhase) * 0.3;
 
 									// Draw expanding ring (green for grain engine)
 									Pen.strokeColor = colors.green.alpha_(pulseAlpha);
