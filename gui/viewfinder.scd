@@ -507,6 +507,7 @@ Usage:
 										pulseRadius * 2,
 										pulseRadius * 2
 									));
+								});
 							});
 						});
 
