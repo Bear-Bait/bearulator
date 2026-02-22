@@ -1,6 +1,10 @@
 # BEARULATOR: Granular Synthesis Workstation
 
-![Bearulator GUI](material/bearulator-gooey.png)
+**Current Session GUI (Feb 21, 2026):**
+![Bearulator GUI v2.4](gui.png)
+
+**Original Concept Art:**
+![Bearulator Concept](material/bearulator-gooey.png)
 
 **BEARULATOR** v2.4 - Professional 4-track granular synthesis workstation built in SuperCollider. Originally inspired by the Torso S-4, this project has evolved into a more flexible workstation optimized for Mac M4 with 24GB RAM. Developed using Claude Code and Google Gemini as coding assistants.
 
@@ -34,7 +38,41 @@ For detailed setup, see [FEATURES.md](FEATURES.md) for complete feature list.
     *(You may need to create the `Extensions` folder if it doesn't exist).*
     4.  Recompile the class library in SuperCollider (`Cmd+Shift+L`).
 - [x] **Directory Structure:** Requires `core/`, `gui/`, `material/`, `io/`, `presets/`, and `samples/` relative to `main.scd`
-## CURRENT FEATURE SET (Phase 1-17)
+## 🔥 LATEST SESSION UPDATES (Feb 21, 2026)
+
+### ✅ NEW WORKING FEATURES
+
+**Phase 19: Unified Tape Rate (Varispeed)**
+- Unified `tapeRate` parameter linking speed + pitch across all engines
+- Works on Direct, Granular, and Spectral engines simultaneously
+- Formula: `pitch_semitones = 12 * log2(rate)`
+- Hardware sampler-style behavior (0.5x = half speed/-12 semitones, 2.0x = double/+12st)
+- Test: `tests/tape-rate-test.scd`
+
+**Phase 20: Waveform Display Enhancement**
+- View-relative playhead coordinates (all 5 playhead types: grain, spectral, direct, recording, pulse)
+- Auto-zoom to loop selection when user finishes dragging
+- ZOOM FULL button (created, not visually appearing - see Known Issues)
+- Implemented with Gemini AI consultation for coordinate system design
+
+**Bug Fixes - FULLY RESOLVED**
+- ✅ KeyStep Connect button placement (moved to SYNC Manager section for proper clustering)
+- ✅ TAP TEMPO BPM display sync (live updates when tap button pressed)
+- ✅ RESET PARAMS comprehensive (61 parameters + all 4 modulators cleanup)
+- ✅ Syntax errors: var declarations, missing braces, window height
+
+### ⚠️ KNOWN BROKEN FEATURES
+
+**Vocoder (Harmonium Integration)**
+- Symptom: All sound stops when vocoder START button pressed
+- Attempted fix: Corrected variable naming (`directSynth` → `directPlaybackSynth`)
+- Status: Partial fix applied; root cause of audio cutoff remains unknown
+- Blocking: Requires deep investigation of track hijacking logic and audio routing
+- Workaround: Use grain/spectral/direct engines independently without vocoder
+
+---
+
+## CURRENT FEATURE SET (Phase 1-20)
 
 ### Audio Engines (Per Track)
 - [x] **Hybrid Architecture:** Fade between Granular, Spectral, and Direct engines via "Engine Mix"
@@ -598,12 +636,37 @@ The `samples/stock/` folder includes some great starter material:
 - Preset save/load system
 - Master bus glue compressor + brick-wall limiter
 
-## KNOWN ISSUES
+## KNOWN ISSUES & STATUS
 
-- Waveform display uses temp files for recorded buffers
-- Modulation window is a separate popup (not integrated)
-- **Engine switching in track viewer has visual bugs** (active development)
+### 🚨 Critical Issues (Blocking Features)
+
+**Vocoder Feature - BROKEN**
+- All audio stops when vocoder START button is pressed
+- Partial fix applied to variable naming but root cause unknown
+- Root causes to investigate:
+  - Track hijacking logic in `track-manager.scd` lines 579-625
+  - Audio bus routing to Harmonium input bus
+  - Synth initialization order in audio graph
+  - See `HARMONIUM-DIAGNOSIS.md` for debugging checklist
+- Workaround: Use grain/spectral/direct engines independently
+
+### ⚠️ Visual/Display Issues
+
+**ZOOM FULL Button - Not Visible**
+- Button created and added to viewfinder window (line 1205)
+- Button logic functional but not rendering visually
+- Likely causes: Layout/rendering issue, button positioning off-screen, or container size
+- Workaround: Use arrow keys and mouse wheel to zoom waveform manually
+
+**ZOOM FULL Button (Phase 20)**
+- Created but not visually appearing (see above)
+
+### 📋 Minor Issues (Functional Workarounds Exist)
+
+- Waveform display uses temp files for recorded buffers (functional but inefficient)
+- Modulation window is a separate popup (not integrated into main tabbed interface)
 - Some GUI elements may overlap in Master tab (layout cleanup in progress)
+- Recording playhead may not advance visually during capture (audio works correctly)
 
 ---
 
